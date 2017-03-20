@@ -1,17 +1,18 @@
 from collections import Counter
 from konlpy.tag import Twitter
- 
-f = open('1.txt')
-data = f.read()
 
-nlp = Twitter()
-nouns = nlp.nouns(data)
+def keyword_extract(filename): 
+   f = open(filename)
+   data = f.read()
 
-count = Counter(nouns)
-words = count.most_common(40)
+   nlp = Twitter()
+   nouns = nlp.nouns(data)
 
-keyword = words[0:3]
+   count = Counter(nouns)
+   words = count.most_common(40)
 
-print (words)
+   keyword = words[0:3]
+   f.close()
+   return keyword
 
-f.close()
+print(keyword_extract('1.txt'))

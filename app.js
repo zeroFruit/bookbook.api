@@ -45,7 +45,7 @@ app.get('/keywords', (req, res) => {
           } else {
             console.log('result:', results);
           }
-          res.send('success');
+          res.send(results);
         });
       })
       .catch((err) => {
