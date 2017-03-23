@@ -7,7 +7,7 @@ from konlpy.tag import Twitter
 
 keywords = []
 
-def keywords_extract(filename): 
+def keywords_extract(filename):
    f = codecs.open('./reviews/'+ filename,"r", "utf-8")
    data = f.read()
 
@@ -29,4 +29,4 @@ def keywords_extract(filename):
 for n in range(1, 6):
 	keywords_extract(fileNames[int(n)])
 
-print(keywords)
+print(keywords) 
