@@ -1,34 +1,24 @@
+import './config/env';
 import express  from 'express';
 import path     from 'path';
-import os       from 'os';
 import cors     from 'cors';
 import rp       from 'request-promise';
 import cheerio  from 'cheerio';
+import fs       from 'fs';
 
 import Code from './config/responseCode';
 import { getBestSellers, getBookIds, getReviewPages, getParagraph, getBookDetail } from './helper/parser';
 import { responseByCode, removeReviews, analysis, recommand } from './helper/utils';
 
-/*
-  OS에 따라서 python-shell 모듈의 pythonPath 파이썬 경로를 바꿔줘야한다.
-*/
-const OS = os.type();
 
-if (OS === 'Linux') {
-  process.env.PYTHONPATH = '/usr/bin/python3';
-} else if (OS === 'Windows_NT') {
-  process.env.PYTHONPATH = '/usr/bin/python3';
-}
 
 const app = express();
-const port = process.env.PORT || 8080;
+const port = process.env.PORT || 3000;
 
 /*
   Cross-Origin Resource Sharing Problem
 */
 app.use(cors());
-
-
 
 const BESTSELLER_LIST_URL = 'http://book.naver.com/bestsell/bestseller_list.nhn?cp=kyobo';
 const options = {
@@ -39,6 +29,7 @@ const options = {
 };
 
 app.get('/keywords', (req, res) => {
+  console.log('reached /keywords');
   removeReviews().then(() => {
     rp(options)
       .then(($) => getBestSellers($))

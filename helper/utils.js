@@ -43,6 +43,7 @@ const removeReviews = () => {
 const scriptPath = './py-scripts/';
 
 const analysis = (fileNames) => {
+  console.log('PYTHONPATH', process.env.PYTHONPATH);
   return new Promise((resolve, reject) => {
     const options = {
       scriptPath,
