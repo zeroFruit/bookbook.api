@@ -1,23 +1,26 @@
-import express from 'express';
-import path from 'path';
+import './config/env';
+import express  from 'express';
+import path     from 'path';
+import cors     from 'cors';
+import rp       from 'request-promise';
+import cheerio  from 'cheerio';
+import fs       from 'fs';
+
+import Code from './config/responseCode';
+import { getBestSellers, getBookIds, getReviewPages, getParagraph, getBookDetail } from './helper/parser';
+import { responseByCode, removeReviews, analysis, recommand } from './helper/utils';
+
+
 
 const app = express();
-const port = process.env.PORT || 8080;
+const port = process.env.PORT || 3000;
 
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
-});
-
-
-import rp from 'request-promise';
-import cheerio from 'cheerio';
-import pyShell from 'python-shell';
-
-import {getBestSellers} from './helper/parser';
-import {getBookIds, getReviewPages, getParagraph, removeReviews} from './helper/utils';
+/*
+  Cross-Origin Resource Sharing Problem
+*/
+app.use(cors());
 
 const BESTSELLER_LIST_URL = 'http://book.naver.com/bestsell/bestseller_list.nhn?cp=kyobo';
-
 const options = {
   uri: BESTSELLER_LIST_URL,
   transform: (body) => {
@@ -26,39 +29,40 @@ const options = {
 };
 
 app.get('/keywords', (req, res) => {
+  console.log('reached /keywords');
   removeReviews().then(() => {
     rp(options)
       .then(($) => getBestSellers($))
       .then((hrefs) => getBookIds(hrefs))
       .then((bids) => getReviewPages(bids))
       .then((list) => getParagraph(list))
-      .then((fileNames) => {
-        const options = {
-          mode: 'text',
-          scriptPath: 'py-scripts/',
-          args: fileNames
-        };
-
-        pyShell.run('test.py', options, (err, results) => {
-          if (err) {
-            console.log('error:', err);
-          } else {
-            console.log('result:', results);
-          }
-          res.send(results);
-        });
+      .then((fileNames) => analysis(fileNames))
+      .then((results) => {
+        console.log('GET /keywords 200');
+        return responseByCode(res, 200, Code.GET_SUCCESS, results);
       })
       .catch((err) => {
-        console.log(err);
-
         if (err === 'HREF_NOT_FOUND') {
-          res.status(404).send(err);
+          res.status(404).send('GET /keywords 404 HREF_NOT_FOUND');
         } else {
-          res.status(404).send('fail');
+          res.status(404).send('GET /keywords 404');
         }
       })
   });
 });
+
+app.get('/books', (req, res) => {
+  recommand(JSON.parse(req.query.words))
+    .then((bid) => getBookDetail(bid))
+    .then((results) => {
+      console.log('GET /books 200');
+      return responseByCode(res, 200, Code.GET_SUCCESS, results);
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(404).send('GET /books 404');
+    });
+})
 
 app.listen(port, () => {
   console.log(`Connected to ${port}`);

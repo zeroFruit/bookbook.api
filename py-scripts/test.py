@@ -39,4 +39,4 @@ def keywords_extract(filename):
 for n in range(1, 6):
 	keywords_extract(fileNames[int(n)])
 
-print(keywords)
+print(keywords) 
