@@ -7,12 +7,22 @@ from konlpy.tag import Twitter
 
 keywords = []
 
+k = open("dumb.txt")
+datak = k.read()
+nlpk = Twitter()
+dumb_file = nlpk.nouns(datak)
+
 def keywords_extract(filename): 
    f = codecs.open('./reviews/'+ filename,"r", "utf-8")
    data = f.read()
 
    nlp = Twitter()
    nouns = nlp.nouns(data)
+
+   for i in nouns:
+   	if i in dumb:
+   		nouns.remove(i)
+   		return nouns
 
    count = Counter(nouns)
    words = count.most_common(40)
